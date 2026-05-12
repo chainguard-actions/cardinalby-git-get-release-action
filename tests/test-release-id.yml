@@ -1,0 +1,43 @@
+name: Test get release by releaseId
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Get release ID for v1.1.1 via API
+        id: get-id
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/v1.1.1" \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id',''))")
+          echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
+      - id: action
+        uses: .
+        with:
+          releaseId: ${{ steps.get-id.outputs.release_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Assert tag_name output matches
+        env:
+          ACTUAL: ${{ steps.action.outputs.tag_name }}
+        run: |
+          echo "actual tag_name: $ACTUAL"
+          if [ "$ACTUAL" != "v1.1.1" ]; then
+            echo "FAIL: expected tag_name to be 'v1.1.1', got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert id output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.id }}
+        run: |
+          echo "actual id: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected id to be non-empty"
+            exit 1
+          fi
+          echo "PASS"

@@ -1,0 +1,45 @@
+name: Test get release by releaseName with searchLimit
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Get release name for v1.1.1 via API
+        id: get-name
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_NAME=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/v1.1.1" \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('name',''))")
+          echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
+          echo "Found release name: $RELEASE_NAME"
+      - id: action
+        uses: .
+        with:
+          releaseName: ${{ steps.get-name.outputs.release_name }}
+          searchLimit: "10"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Assert id output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.id }}
+        run: |
+          echo "actual id: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected id to be non-empty"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert tag_name output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.tag_name }}
+        run: |
+          echo "actual tag_name: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected tag_name to be non-empty"
+            exit 1
+          fi
+          echo "PASS"
