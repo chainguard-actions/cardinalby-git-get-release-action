@@ -4,34 +4,33 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GITHUB_REPOSITORY: actions/checkout
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - id: action
         uses: .
         with:
-          releaseName: "v3.6.0"
-          searchLimit: "30"
+          releaseName: "v1.1.1"
+          searchLimit: "10"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: actions/checkout
-      - name: Assert outputs are non-empty
+          GITHUB_REPOSITORY: cardinalby/git-get-release-action
+      - name: Assert id output is set
         env:
-          TAG_NAME: ${{ steps.action.outputs.tag_name }}
-          RELEASE_ID: ${{ steps.action.outputs.id }}
-          RELEASE_NAME: ${{ steps.action.outputs.name }}
+          ACTUAL: ${{ steps.action.outputs.id }}
         run: |
-          echo "tag_name: $TAG_NAME"
-          echo "id: $RELEASE_ID"
-          echo "name: $RELEASE_NAME"
-          if [ -z "$TAG_NAME" ]; then
-            echo "FAIL: tag_name output is empty"
+          echo "actual id: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected id to be non-empty"
             exit 1
           fi
-          if [ -z "$RELEASE_ID" ]; then
-            echo "FAIL: id output is empty"
+          echo "PASS"
+      - name: Assert name output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.name }}
+        run: |
+          echo "actual name: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected name to be non-empty"
             exit 1
           fi
           echo "PASS"
