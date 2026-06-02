@@ -4,31 +4,31 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: actions/checkout
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - id: action
         uses: .
         with:
-          tag: "v1.1.1"
+          tag: "v3.6.0"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Assert tag_name output matches
+          GITHUB_REPOSITORY: actions/checkout
+      - name: Assert tag_name matches
         env:
-          ACTUAL: ${{ steps.action.outputs.tag_name }}
+          TAG_NAME: ${{ steps.action.outputs.tag_name }}
+          RELEASE_ID: ${{ steps.action.outputs.id }}
         run: |
-          echo "actual tag_name: $ACTUAL"
-          if [ "$ACTUAL" != "v1.1.1" ]; then
-            echo "FAIL: expected tag_name to be 'v1.1.1', got '$ACTUAL'"
+          echo "tag_name: $TAG_NAME"
+          echo "id: $RELEASE_ID"
+          if [ "$TAG_NAME" != "v3.6.0" ]; then
+            echo "FAIL: expected tag_name 'v3.6.0', got '$TAG_NAME'"
             exit 1
           fi
-          echo "PASS"
-      - name: Assert id output is set
-        env:
-          ACTUAL: ${{ steps.action.outputs.id }}
-        run: |
-          echo "actual id: $ACTUAL"
-          if [ -z "$ACTUAL" ]; then
-            echo "FAIL: expected id to be non-empty"
+          if [ -z "$RELEASE_ID" ]; then
+            echo "FAIL: id output is empty"
             exit 1
           fi
           echo "PASS"
