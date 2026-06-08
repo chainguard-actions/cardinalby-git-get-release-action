@@ -1,4 +1,4 @@
-name: Test get release by tag
+name: Test searchLimit input
 on:
   workflow_dispatch:
 jobs:
@@ -9,23 +9,26 @@ jobs:
       - id: action
         uses: .
         with:
-          tag: "v4"
+          releaseName: "v3"
+          searchLimit: "50"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: actions/checkout
-      - name: Assert tag_name matches
+      - name: Assert outputs are non-empty
         env:
           TAG_NAME: ${{ steps.action.outputs.tag_name }}
           RELEASE_ID: ${{ steps.action.outputs.id }}
+          RELEASE_NAME: ${{ steps.action.outputs.name }}
         run: |
           echo "tag_name: $TAG_NAME"
           echo "id: $RELEASE_ID"
-          if [ "$TAG_NAME" != "v4" ]; then
-            echo "FAIL: expected tag_name 'v4', got '$TAG_NAME'"
-            exit 1
-          fi
+          echo "name: $RELEASE_NAME"
           if [ -z "$RELEASE_ID" ]; then
             echo "FAIL: id output is empty"
+            exit 1
+          fi
+          if [ -z "$TAG_NAME" ]; then
+            echo "FAIL: tag_name output is empty"
             exit 1
           fi
           echo "PASS"

@@ -9,27 +9,24 @@ jobs:
       - id: action
         uses: .
         with:
-          releaseId: "62206386"
+          # Release ID for actions/checkout v4 (tag: v4)
+          releaseId: "119435351"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: actions/checkout
-      - name: Assert id output matches
+      - name: Assert outputs are non-empty
         env:
-          ACTUAL: ${{ steps.action.outputs.id }}
+          TAG_NAME: ${{ steps.action.outputs.tag_name }}
+          RELEASE_ID: ${{ steps.action.outputs.id }}
         run: |
-          echo "actual id: $ACTUAL"
-          if [ -z "$ACTUAL" ]; then
-            echo "FAIL: expected id to be non-empty"
+          echo "tag_name: $TAG_NAME"
+          echo "id: $RELEASE_ID"
+          if [ -z "$TAG_NAME" ]; then
+            echo "FAIL: tag_name output is empty"
             exit 1
           fi
-          echo "PASS"
-      - name: Assert tag_name output is set
-        env:
-          ACTUAL: ${{ steps.action.outputs.tag_name }}
-        run: |
-          echo "actual tag_name: $ACTUAL"
-          if [ -z "$ACTUAL" ]; then
-            echo "FAIL: expected tag_name to be non-empty"
+          if [ "$RELEASE_ID" != "119435351" ]; then
+            echo "FAIL: expected id '119435351', got '$RELEASE_ID'"
             exit 1
           fi
           echo "PASS"

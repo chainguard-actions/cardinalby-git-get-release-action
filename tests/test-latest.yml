@@ -12,24 +12,21 @@ jobs:
           latest: "true"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: cardinalby/git-get-release-action
-      - name: Assert id output is set
+      - name: Assert outputs are non-empty
         env:
-          ACTUAL: ${{ steps.action.outputs.id }}
+          TAG_NAME: ${{ steps.action.outputs.tag_name }}
+          RELEASE_ID: ${{ steps.action.outputs.id }}
+          HTML_URL: ${{ steps.action.outputs.html_url }}
         run: |
-          echo "actual id: $ACTUAL"
-          if [ -z "$ACTUAL" ]; then
-            echo "FAIL: expected id to be non-empty"
+          echo "tag_name: $TAG_NAME"
+          echo "id: $RELEASE_ID"
+          echo "html_url: $HTML_URL"
+          if [ -z "$TAG_NAME" ]; then
+            echo "FAIL: tag_name output is empty"
             exit 1
           fi
-          echo "PASS"
-      - name: Assert tag_name output is set
-        env:
-          ACTUAL: ${{ steps.action.outputs.tag_name }}
-        run: |
-          echo "actual tag_name: $ACTUAL"
-          if [ -z "$ACTUAL" ]; then
-            echo "FAIL: expected tag_name to be non-empty"
+          if [ -z "$RELEASE_ID" ]; then
+            echo "FAIL: id output is empty"
             exit 1
           fi
           echo "PASS"
