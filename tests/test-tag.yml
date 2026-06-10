@@ -9,23 +9,27 @@ jobs:
       - id: action
         uses: .
         with:
-          tag: "v4"
+          tag: "v4.2.2"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: actions/checkout
       - name: Assert tag_name matches
         env:
-          TAG_NAME: ${{ steps.action.outputs.tag_name }}
-          RELEASE_ID: ${{ steps.action.outputs.id }}
+          ACTUAL: ${{ steps.action.outputs.tag_name }}
         run: |
-          echo "tag_name: $TAG_NAME"
-          echo "id: $RELEASE_ID"
-          if [ "$TAG_NAME" != "v4" ]; then
-            echo "FAIL: expected tag_name 'v4', got '$TAG_NAME'"
+          echo "actual tag_name: $ACTUAL"
+          if [ "$ACTUAL" != "v4.2.2" ]; then
+            echo "FAIL: expected tag_name to be 'v4.2.2', got '$ACTUAL'"
             exit 1
           fi
-          if [ -z "$RELEASE_ID" ]; then
-            echo "FAIL: id output is empty"
+          echo "PASS"
+      - name: Assert id is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.id }}
+        run: |
+          echo "actual id: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected id to be non-empty"
             exit 1
           fi
           echo "PASS"
