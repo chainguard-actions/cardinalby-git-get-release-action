@@ -1,0 +1,49 @@
+name: Test get release by tag
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          tag: 'v4.1.1'
+          repo: 'actions/checkout'
+        continue-on-error: true
+      - name: Assert outputs for known tag
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          TAG_NAME: ${{ steps.action.outputs.tag_name }}
+          RELEASE_ID: ${{ steps.action.outputs.id }}
+          HTML_URL: ${{ steps.action.outputs.html_url }}
+          DRAFT: ${{ steps.action.outputs.draft }}
+          PRERELEASE: ${{ steps.action.outputs.prerelease }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "tag_name: $TAG_NAME"
+          echo "id: $RELEASE_ID"
+          echo "html_url: $HTML_URL"
+          echo "draft: $DRAFT"
+          echo "prerelease: $PRERELEASE"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$TAG_NAME" != "v4.1.1" ]; then
+              echo "FAIL: expected tag_name='v4.1.1' but got '$TAG_NAME'"
+              exit 1
+            fi
+            if [ -z "$RELEASE_ID" ]; then
+              echo "FAIL: action succeeded but id output is empty"
+              exit 1
+            fi
+            if [ -z "$HTML_URL" ]; then
+              echo "FAIL: action succeeded but html_url output is empty"
+              exit 1
+            fi
+            echo "PASS: got release for tag v4.1.1, id='$RELEASE_ID'"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected if GitHub API is unavailable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

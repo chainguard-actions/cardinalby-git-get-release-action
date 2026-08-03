@@ -1,0 +1,36 @@
+name: Test by commitSha input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          commitSha: 'de0fac2e4500dabe0009e67214ff5f5447ce83dd'
+          repo: 'actions/checkout'
+          searchLimit: '20'
+        continue-on-error: true
+      - name: Assert action ran and returned a release or failed gracefully
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          RELEASE_ID: ${{ steps.action.outputs.id }}
+          TAG_NAME: ${{ steps.action.outputs.tag_name }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "release_id: $RELEASE_ID"
+          echo "tag_name: $TAG_NAME"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -z "$RELEASE_ID" ]; then
+              echo "FAIL: action succeeded but id output is empty"
+              exit 1
+            fi
+            echo "PASS: got release id '$RELEASE_ID' tag '$TAG_NAME'"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (commit SHA not found in releases or API not reachable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

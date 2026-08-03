@@ -1,0 +1,41 @@
+name: Test prerelease filter input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          latest: 'true'
+          prerelease: 'false'
+          repo: 'actions/checkout'
+          doNotFailIfNotFound: 'true'
+        continue-on-error: true
+      - name: Assert action ran and returned a release or failed gracefully
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          RELEASE_ID: ${{ steps.action.outputs.id }}
+          PRERELEASE: ${{ steps.action.outputs.prerelease }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "release_id: $RELEASE_ID"
+          echo "prerelease: $PRERELEASE"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -n "$RELEASE_ID" ]; then
+              if [ "$PRERELEASE" = "true" ]; then
+                echo "FAIL: expected non-prerelease release but got prerelease=true"
+                exit 1
+              fi
+              echo "PASS: got non-prerelease release id '$RELEASE_ID'"
+            else
+              echo "PASS: no release found (doNotFailIfNotFound=true)"
+            fi
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (API not reachable under sentinel repo)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

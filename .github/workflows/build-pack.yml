@@ -1,0 +1,51 @@
+name: "build-pack"
+on:
+  push:
+    branches:
+      - '*'
+permissions:
+  contents: write
+jobs:
+  buildPack:
+    env:
+      PACKED_JS_PATH: 'dist/index.js'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2
+      - name: Extract branch name
+        id: extractBranch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      - name: Use Node.js
+        uses: actions/setup-node@f1f314fca9dfce2769ece7d933488f076716723e # v1
+        with:
+          node-version: 16.x
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Pack
+        run: npm run pack
+      - name: Check packed js changes
+        id: packedJsStatus
+        env:
+          PACKED_JS_PATH: ${{ env.PACKED_JS_PATH }}
+        run: echo ::set-output name=changes::$(git status "$PACKED_JS_PATH" --porcelain)
+      - name: Commit packed js
+        id: commitPackedJs
+        if: steps.packedJsStatus.outputs.changes
+        env:
+          PACKED_JS_PATH: ${{ env.PACKED_JS_PATH }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add "$PACKED_JS_PATH"
+          git commit -m "Pack with dependencies to $PACKED_JS_PATH"
+      - name: Push packed js
+        if: steps.commitPackedJs.outcome == 'success'
+        uses: ad-m/github-push-action@881a6320fdb16eb5318c5054f31c218aec2b324c # master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tags: true
+          force: true
+          branch: ${{ steps.extractBranch.outputs.branch }}

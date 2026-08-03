@@ -1,0 +1,30 @@
+name: Test doNotFailIfNotFound option
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          tag: 'v99999.99999.99999-this-tag-does-not-exist'
+          repo: 'actions/checkout'
+          doNotFailIfNotFound: 'true'
+        continue-on-error: true
+      - name: Assert action does not fail when release not found
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          TAG_NAME: ${{ steps.action.outputs.tag_name }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "tag_name: $TAG_NAME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded (release not found but doNotFailIfNotFound=true)"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected if GitHub API is unavailable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

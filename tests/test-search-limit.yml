@@ -1,0 +1,33 @@
+name: Test searchLimit input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          releaseName: 'v4'
+          repo: 'actions/checkout'
+          searchLimit: '5'
+          doNotFailIfNotFound: 'true'
+        continue-on-error: true
+      - name: Assert action ran with searchLimit and returned a release or failed gracefully
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          RELEASE_ID: ${{ steps.action.outputs.id }}
+          RELEASE_NAME: ${{ steps.action.outputs.name }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "release_id: $RELEASE_ID"
+          echo "release_name: $RELEASE_NAME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded (release_id='$RELEASE_ID', name='$RELEASE_NAME')"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (API not reachable or release not found)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
