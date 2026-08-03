@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | 1.1.1 | [`1.1.1`](https://github.com/chainguard-actions/cardinalby-git-get-release-action/tree/1.1.1) | [`e92acb1`](https://github.com/cardinalby/git-get-release-action/commit/e92acb19de8845ad1f3cb6cfab421ac26002d6b6) |
+| 1.2.4 | [`1.2.4`](https://github.com/chainguard-actions/cardinalby-git-get-release-action/tree/1.2.4) | [`cedef2f`](https://github.com/cardinalby/git-get-release-action/commit/cedef2faf69cb7c55b285bad07688d04430b7ada) |
 
 ## Privacy
 
