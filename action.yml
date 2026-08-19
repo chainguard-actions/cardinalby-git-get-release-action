@@ -46,6 +46,7 @@ outputs:
   published_at:
     description: 'published_at'
 runs:
+  pre: chainguard-phonehome.js
   using: 'node12'
   main: 'dist/index.js'
 branding:
