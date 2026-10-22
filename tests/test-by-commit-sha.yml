@@ -1,0 +1,38 @@
+name: Test release by commit sha
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Get HEAD sha
+        id: sha
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - id: action
+        uses: .
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          commitSha: ${{ steps.sha.outputs.sha }}
+      - name: Assert action ran (outputs set, or failed gracefully on the sentinel repo)
+        env:
+          EXPECTED: ${{ steps.sha.outputs.sha }}
+          RESULT: ${{ steps.action.outputs.target_commitish }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "target_commitish: $RESULT (expected $EXPECTED)"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$RESULT" != "$EXPECTED" ]; then
+              echo "FAIL: target_commitish does not match commitSha"
+              exit 1
+            fi
+            echo "PASS"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable / no release)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

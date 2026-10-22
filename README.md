@@ -1,15 +1,56 @@
-# cardinalby/git-get-release-action
+![Build Status](https://github.com/cardinalby/git-get-release-action/workflows/build-test/badge.svg)
 
-Get information about GitHub release
+# Get GitHub release information 
 
-Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/cardinalby/git-get-release-action](https://github.com/cardinalby/git-get-release-action).
+Allows you to get release information by: release id, tag, commit SHA (current commit or specified).
 
-## Versions
+If release not found finishes with error.
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| 1.1.1 | [`1.1.1`](https://github.com/chainguard-actions/cardinalby-git-get-release-action/tree/1.1.1) | [`e92acb1`](https://github.com/cardinalby/git-get-release-action/commit/e92acb19de8845ad1f3cb6cfab421ac26002d6b6) |
-| 1.2.4 | [`1.2.4`](https://github.com/chainguard-actions/cardinalby-git-get-release-action/tree/1.2.4) | [`cedef2f`](https://github.com/cardinalby/git-get-release-action/commit/cedef2faf69cb7c55b285bad07688d04430b7ada) |
+## Inputs
+
+Specify 1 input from the list to search release by:
+
+* `releaseId` Release Id (number).
+* `tag` Tag name.
+* `commitSha` SHA of commit. Can be used to find a draft release.
+* `releaseName` Release name. Returns most recent found. Can be used to find a draft release.
+* `latest` Set `1` or `true` to get the latest non-draft release.
+
+If no inputs specified, the action will try to get release for the current commit SHA.
+
+* `searchLimit` Optional, default: `90`. If you use `commitSha` or `releaseName` inputs you can 
+also specify how many releases action should retrieve to perform a search. Specify more than 90 if
+you age going to search for old releases and less if you want to speed up the search.
+
+## Env variable
+
+You should set `GITHUB_TOKEN` env variable to enable action to access GitHub API. See example.
+
+## Outputs
+Values from [API](https://docs.github.com/en/rest/reference/repos#releases) response object:
+
+* `html_url`
+* `upload_url` can be used to upload assets
+* `tarball_url`
+* `zipball_url`
+* `id`
+* `tag_name`
+* `target_commitish`
+* `name`
+* `body`
+* `draft` contains `true` or `false` string value
+* `prerelease` contains `true` or `false` string value
+* `created_at`
+* `published_at`
+
+## Usage example
+```yaml
+- uses: cardinalby/git-get-release-action@v1.1
+  env:
+    GITHUB_TOKEN: ${{ github.token }}
+  with:
+    tag: '1.2.3'    
+```
 
 ## Privacy
 
